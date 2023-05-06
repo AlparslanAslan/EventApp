@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+<h1>@ViewData["Title"]</h1>
+
+
+
+<a href='@Url.Action("ShowEvents", "Home")'>
+    <button>Etkinlikler</button>
+</a>
+
+<a href='@Url.Action("CreateEvent", "Home")'>
+    <button>Etkinlik Oluşturma</button>
+</a>
+
+<a href='@Url.Action("MyTickets", "Home")'>
+    <button>Biletlerim</button>
+</a>
+
+<a href='@Url.Action("MyProfile", "Home")'>
+    <button>Profilim</button>
+</a>

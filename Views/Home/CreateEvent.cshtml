@@ -1,0 +1,72 @@
+﻿@model EventApp.Models.Event
+@{
+    ViewData["Title"] = "Create Event";
+}
+<h1>@ViewData["Title"]</h1>
+
+@using (Html.BeginForm("CreateEvent", "Home", FormMethod.Post))  
+{  
+<fieldset>  
+
+  
+@Html.AntiForgeryToken()  
+@Html.ValidationSummary(true)  
+@if (@ViewBag.Message != null)  
+{  
+<div style="border: 1px solid red">  
+@ViewBag.Message  
+</div>  
+}  
+<table>  
+<tr>  
+<td>@Html.LabelFor(a => a.Baslik)</td>  
+<td>@Html.TextBoxFor(a => a.Baslik)</td>  
+<td>@Html.ValidationMessageFor(a => a.Baslik)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Aciklama)</td>  
+<td>@Html.TextBoxFor(a => a.Aciklama)</td>  
+<td>@Html.ValidationMessageFor(a => a.Aciklama)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Tarih)</td>  
+<td>@Html.EditorFor(a => a.Tarih)</td>  
+<td>@Html.ValidationMessageFor(a => a.Tarih)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Kontenjan)</td>  
+<td>@Html.TextBoxFor(a => a.Kontenjan)</td>  
+<td>@Html.ValidationMessageFor(a => a.Kontenjan)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Kategori)</td>  
+<td>@Html.DropDownListFor(a => a.Kategori,(SelectList)@ViewData["Categories"])</td>  
+<td>@Html.ValidationMessageFor(a => a.Kategori)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Sehir)</td>  
+<td>@Html.DropDownListFor(a => a.Sehir,(SelectList)@ViewData["Cities"])</td>  
+<td>@Html.ValidationMessageFor(a => a.Sehir)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.Adres)</td>  
+<td>@Html.TextBoxFor(a => a.Adres)</td>  
+<td>@Html.ValidationMessageFor(a => a.Adres)</td>  
+</tr> 
+
+<tr>  
+<td></td>  
+<td>  
+<input type="submit" value="CreateEvent" />  
+</td>  
+<td></td>  
+</tr>  
+</table>  
+</fieldset>  
+} 

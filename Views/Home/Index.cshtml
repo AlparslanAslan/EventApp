@@ -1,8 +1,95 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model EventApp.Models.User
+@{
+    ViewData["Title"] = "Login";
 }
+@using (Html.BeginForm("Login", "Home", FormMethod.Post))  
+{  
+<fieldset>  
+<legend>Login</legend>  
+  
+@Html.AntiForgeryToken()  
+@Html.ValidationSummary(true)  
+@if (@ViewBag.Message != null)  
+{  
+<div style="border: 1px solid red">  
+@ViewBag.Message  
+</div>  
+}  
+<table>  
+<tr>  
+<td>@Html.LabelFor(a => a.Email)</td>  
+<td>@Html.TextBoxFor(a => a.Email)</td>  
+<td>@Html.ValidationMessageFor(a => a.Email)</td>  
+</tr>  
+<tr>  
+<td>  
+@Html.LabelFor(a => a.Password)  
+</td>  
+<td>  
+@Html.PasswordFor(a => a.Password)  
+</td>  
+<td>  
+@Html.ValidationMessageFor(a => a.Password)  
+</td>  
+</tr>  
+<tr>  
+<td></td>  
+<td>  
+<input type="submit" value="Login" />  
+</td>  
+<td></td>  
+</tr>  
+</table>  
+</fieldset>  
+} 
+@using (Html.BeginForm("Signin", "Home", FormMethod.Post))  
+{  
+<fieldset>  
+<legend>Sign In</legend>  
+  
+@Html.AntiForgeryToken()  
+@Html.ValidationSummary(true)  
+@if (@ViewBag.Message != null)  
+{  
+<div style="border: 1px solid red">  
+@ViewBag.Message  
+</div>  
+}  
+<table>  
+<tr>  
+<td>@Html.LabelFor(a => a.Name)</td>  
+<td>@Html.TextBoxFor(a => a.Name)</td>  
+<td>@Html.ValidationMessageFor(a => a.Name)</td>  
+</tr> 
+<tr>  
+<td>@Html.LabelFor(a => a.Surname)</td>  
+<td>@Html.TextBoxFor(a => a.Surname)</td>  
+<td>@Html.ValidationMessageFor(a => a.Surname)</td>  
+</tr> <tr>  
+<td>@Html.LabelFor(a => a.Email)</td>  
+<td>@Html.TextBoxFor(a => a.Email)</td>  
+<td>@Html.ValidationMessageFor(a => a.Email)</td>  
+</tr> 
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<tr>  
+<td>  
+@Html.LabelFor(a => a.Password)  
+</td>  
+<td>  
+@Html.PasswordFor(a => a.Password)  
+</td>  
+<td>  
+@Html.ValidationMessageFor(a => a.Password)  
+</td>  
+</tr>  
+<tr>  
+<td></td>  
+<td>  
+<input type="submit" value="Signin" />  
+</td>  
+<td></td>  
+</tr>  
+</table>  
+</fieldset>  
+} 
+
