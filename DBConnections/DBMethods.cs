@@ -11,7 +11,7 @@ namespace EventApp.DBConnections
  Server=172.17.0.2;Database=test;User Id=sa;Password=balamir1234;
 ";
 
-        public  int AddUser(User user)
+        public int AddUser(User user)
         {
             string sql = @"
                 insert into EventUser values(@Name,@Surname,@Email,@Password,'User');
@@ -20,6 +20,30 @@ namespace EventApp.DBConnections
              using (var connection = new SqlConnection(connectionString))
             {
                 return connection.ExecuteScalar<int>(sql, user);
+            }
+
+        }
+        public int AddCity(string  sehir)
+        {
+            string sql = @"
+                insert into Sehir values(@Name);
+                SELECT CAST(SCOPE_IDENTITY() as int)
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.ExecuteScalar<int>(sql, new{Name=sehir});
+            }
+
+        }
+        public  int AddCategory(string kategori)
+        {
+            string sql = @"
+               insert into Kategori values(@Name);
+                SELECT CAST(SCOPE_IDENTITY() as int)
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.ExecuteScalar<int>(sql, new{Name=kategori});
             }
 
         }
@@ -81,11 +105,11 @@ namespace EventApp.DBConnections
         public User GetUserForLogin(string email,string password)
         {
             string sql = @"
-                select Name,Surname,Email,Password,Role from EventUser where Email=@Email and Password=@Password
+                select Id,Name,Surname,Email,Password,Role from EventUser where Email=@Email and Password=@Password
             ";
              using (var connection = new SqlConnection(connectionString))
             {
-                return connection.QueryFirst<User>(sql,new {Email=email,Password=password});
+                return connection.QueryFirstOrDefault<User>(sql,new {Email=email,Password=password});
             }
         }
         public  IEnumerable<Event> ShowEvents(int UserId)
@@ -103,8 +127,45 @@ namespace EventApp.DBConnections
                 return connection.Query<Event>(sql,new {UserId=UserId});
             }
 
-        }
-        
+        }        
+        public  IEnumerable<string> GetCities()
+        {
+            string sql = @"
+                select Name from Sehir
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Query<string>(sql);
+            }
+
+        } 
+        public  IEnumerable<string> GetCategories()
+        {
+            string sql = @"
+                select Name from Kategori
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Query<string>(sql);
+            }
+
+        } 
+        public  IEnumerable<Event> GetEventsById(int Id)
+        {
+            string sql = @"
+                select e.Id,e.baslik Baslik,e.aciklama Aciklama,e.tarih Tarih ,e.kontenjan Kontenjan,k.Name Kategori,s.Name Sehir,'Siz' Olusturan,e.adres
+                from Event e
+                left join Sehir s on s.Id=e.sehirid
+                left join Kategori k on k.Id=e.kategoriid
+                left join EventUser eu on eu.Id=e.olusturanid 
+                where olusturanid=@Id
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Query<Event>(sql,new{Id=Id});
+            }
+
+        } 
         public  IEnumerable<Ticket> GetTickets(int userid)
         {
             string sql = @"
@@ -114,7 +175,7 @@ namespace EventApp.DBConnections
                 inner join Ticket t on t.EventId=e.Id
                 inner join Sehir s on s.Id=e.sehirid
                 inner join Kategori k on k.Id = e.kategoriid
-                inner join EventUser eu on eu.Id =e.olusturanid
+                left join EventUser eu on eu.Id =e.olusturanid
                 where t.UserId=@Userid
             ";
              using (var connection = new SqlConnection(connectionString))

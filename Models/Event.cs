@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace EventApp.Models;
 
 public class Event
@@ -5,6 +6,7 @@ public class Event
     public int Id {get;set;}
     public string? Baslik { get; set; }
     public string? Aciklama { get; set; }
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
     public DateTime Tarih { get; set; }
     public int Kontenjan { get; set; }
     public string? Kategori { get; set; }

@@ -37,6 +37,51 @@
         border-color: #357ebd;
     }
 </style>
+@using (Html.BeginForm("Arama", "Home", FormMethod.Post))  
+{  
+<fieldset>  
+
+  
+@Html.AntiForgeryToken()  
+@Html.ValidationSummary(true)  
+@if (@ViewBag.Message != null)  
+{  
+<div style="border: 1px solid red">  
+@ViewBag.Message  
+</div>  
+}  
+<table>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.First().Tarih)</td>  
+<td>@Html.EditorFor(a => a.First().Tarih,  new { @type = "date", @value = DateTime.Now.ToString("dd/MM/yyyy HH:mm ") })</td>  
+@* <td>
+@Html.EditorFor(a => a.Tarih, new { htmlAttributes = new { @class = "datepicker" } })
+</td> *@
+<td>@Html.ValidationMessageFor(a => a.First().Tarih)</td>  
+</tr>  
+
+<tr>  
+<td>@Html.LabelFor(a => a.First().Kategori)</td>  
+<td>@Html.DropDownListFor(a => a.First().Kategori,(SelectList)@ViewData["Categories"])</td>  
+<td>@Html.ValidationMessageFor(a => a.First().Kategori)</td>  
+</tr> 
+<tr>  
+<td>@Html.LabelFor(a => a.First().Sehir)</td>  
+<td>@Html.DropDownListFor(a => a.First().Sehir,(SelectList)@ViewData["Cities"])</td>  
+<td>@Html.ValidationMessageFor(a => a.First().Sehir)</td>  
+</tr>  
+
+<tr>  
+<td></td>  
+<td>  
+<input type="submit" value="Arama" />  
+</td>  
+<td></td>  
+</tr>  
+</table>  
+</fieldset>  
+} 
 
 <table>
     <thead>

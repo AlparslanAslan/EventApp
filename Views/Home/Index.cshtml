@@ -5,14 +5,14 @@
 @using (Html.BeginForm("Login", "Home", FormMethod.Post))  
 {  
 <fieldset>  
-<legend>Login</legend>  
+<legend>Log In</legend>  
   
 @Html.AntiForgeryToken()  
 @Html.ValidationSummary(true)  
-@if (@ViewBag.Message != null)  
+@if (@ViewBag.MessageLogin != null)  
 {  
 <div style="border: 1px solid red">  
-@ViewBag.Message  
+@ViewBag.MessageLogin  
 </div>  
 }  
 <table>  
@@ -45,14 +45,14 @@
 @using (Html.BeginForm("Signin", "Home", FormMethod.Post))  
 {  
 <fieldset>  
-<legend>Sign In</legend>  
+<legend>Sign Up</legend>  
   
 @Html.AntiForgeryToken()  
 @Html.ValidationSummary(true)  
-@if (@ViewBag.Message != null)  
+@if (@ViewBag.MessageSignUp != null)  
 {  
 <div style="border: 1px solid red">  
-@ViewBag.Message  
+@ViewBag.MessageSignUp  
 </div>  
 }  
 <table>  
@@ -82,6 +82,7 @@
 @Html.ValidationMessageFor(a => a.Password)  
 </td>  
 </tr>  
+
 <tr>  
 <td></td>  
 <td>  
