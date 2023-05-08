@@ -92,6 +92,16 @@ namespace EventApp.DBConnections
                 return connection.Execute(sql,_event);
             }
         }
+         public int UpdateEventDetail(Event _event)
+        {
+            string sql = @"
+                update Event set kontenjan=@Kontenjan , adres=@Adres where Id=@Id;
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql,_event);
+            }
+        }
          public User GetUser(int userId)
         {
             string sql = @"
@@ -100,6 +110,16 @@ namespace EventApp.DBConnections
              using (var connection = new SqlConnection(connectionString))
             {
                 return connection.QueryFirst<User>(sql,new {userId=userId});
+            }
+        }
+         public Event GetEventByEventId(int eventid)
+        {
+            string sql = @"
+                select * from Event where Id=@eventid
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.QueryFirstOrDefault<Event>(sql,new {eventid=eventid});
             }
         }
         public User GetUserForLogin(string email,string password)
@@ -115,22 +135,61 @@ namespace EventApp.DBConnections
         public  IEnumerable<Event> ShowEvents(int UserId)
         {
             string sql = @"
-                select e.Id,e.baslik Baslik,e.aciklama Aciklama,e.tarih Tarih ,e.kontenjan Kontenjan,k.Name Kategori,s.Name Sehir,concat(eu.Name,' ',eu.Surname) Olusturan,e.adres
+                select e.onay Onay,e.Id,e.baslik Baslik,e.aciklama Aciklama,e.tarih Tarih ,e.kontenjan-isnull(t.toplam,0) Kontenjan,k.Name Kategori,s.Name Sehir,concat(eu.Name,' ',eu.Surname) Olusturan,e.adres
                 from Event e
                 left join Sehir s on s.Id=e.sehirid
                 left join Kategori k on k.Id=e.kategoriid
                 left join EventUser eu on eu.Id=e.olusturanid 
-                where e.Id not in (select EventId from Ticket where UserId = @UserId) 
+                 left join (select eventid,count(*) toplam from Ticket  group by eventid) t on t.eventid=e.id
+                where e.Id not in (select EventId from Ticket where UserId = @UserId)  and e.Onay=1
             ";
              using (var connection = new SqlConnection(connectionString))
             {
                 return connection.Query<Event>(sql,new {UserId=UserId});
             }
 
-        }        
+        }   
+        public  IEnumerable<Event> ShowEventsForOnay()
+        {
+            string sql = @"
+                select e.onay Onay,e.Id,e.baslik Baslik,e.aciklama Aciklama,e.tarih Tarih ,e.kontenjan Kontenjan,k.Name Kategori,s.Name Sehir,concat(eu.Name,' ',eu.Surname) Olusturan,e.adres
+                from Event e
+                left join Sehir s on s.Id=e.sehirid
+                left join Kategori k on k.Id=e.kategoriid
+                left join EventUser eu on eu.Id=e.olusturanid 
+                 
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Query<Event>(sql);
+            }
+
+        } 
+        public  IEnumerable<Event> FilterEvents(DateTime? Tarih , string Kategori, string Sehir)
+        {
+            string sql = @"
+                if(@Sehir='')
+                select @Sehir=null
+                if(@Kategori='')
+                select @Kategori=null
+                select e.onay,e.Id,e.baslik Baslik,e.aciklama Aciklama,e.tarih Tarih ,e.kontenjan-isnull(t.toplam,0) Kontenjan,k.Name Kategori,s.Name Sehir,concat(eu.Name,' ',eu.Surname) Olusturan,e.adres
+                from Event e
+                left join Sehir s on s.Id=e.sehirid
+                left join Kategori k on k.Id=e.kategoriid
+                left join EventUser eu on eu.Id=e.olusturanid 
+                left join (select eventid,count(*) toplam from Ticket  group by eventid) t on t.eventid=e.id
+                where k.Name = isnull(@Kategori,k.Name) and s.Name =isnull(@Sehir,s.Name) and e.tarih=isnull(@Tarih,e.tarih) and e.Onay=1
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Query<Event>(sql,new {Kategori=Kategori , Sehir=Sehir,Tarih=Tarih});
+            }
+
+        }      
         public  IEnumerable<string> GetCities()
         {
             string sql = @"
+                select '' Name union
                 select Name from Sehir
             ";
              using (var connection = new SqlConnection(connectionString))
@@ -142,6 +201,7 @@ namespace EventApp.DBConnections
         public  IEnumerable<string> GetCategories()
         {
             string sql = @"
+                select '' Name union
                 select Name from Kategori
             ";
              using (var connection = new SqlConnection(connectionString))

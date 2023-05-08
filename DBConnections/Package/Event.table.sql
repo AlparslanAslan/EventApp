@@ -14,7 +14,7 @@ CREATE TABLE [dbo].[Event]
     kategoriid int,
     sehirid int,
     olusturanid int,
-    onay int,
+    onay bit,
     aktif int,
     adres varchar(200)
 );

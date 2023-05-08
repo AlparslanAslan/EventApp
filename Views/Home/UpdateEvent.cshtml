@@ -1,0 +1,40 @@
+﻿@model EventApp.Models.Event
+
+@using (Html.BeginForm("UpdateEvent", "Home", FormMethod.Post))  
+{  
+<fieldset>  
+
+  
+@Html.AntiForgeryToken()  
+@Html.ValidationSummary(true)  
+  
+<table>  
+<tr>
+<td>@Html.LabelFor(a => a.Id)</td>  
+<td>@Html.EditorFor(a => a.Id)</td>  
+<td>@Html.ValidationMessageFor(a => a.Id)</td> 
+</tr>
+<tr>  
+<td>@Html.LabelFor(a => a.Kontenjan)</td>  
+<td>@Html.EditorFor(a => a.Kontenjan)</td>  
+<td>@Html.ValidationMessageFor(a => a.Kontenjan)</td>  
+</tr>  
+
+
+<tr>  
+<td>@Html.LabelFor(a => a.Adres)</td>  
+<td>@Html.EditorFor(a => a.Adres)</td>  
+<td>@Html.ValidationMessageFor(a => a.Adres)</td>  
+</tr> 
+
+<tr>  
+<td></td>  
+<td>  
+<input type="submit" value="Update Event" />  
+</td>  
+<td></td>  
+</tr>  
+</table>  
+</fieldset>  
+} 
+

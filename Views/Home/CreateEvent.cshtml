@@ -147,12 +147,23 @@
                 <td>@item.Aktif</td>
                 <td>@item.Adres</td>
                  <td>
-                    <form method="post" action="/Home/ShowEvents">
-                        <input type="hidden" name="itemId" value="@item.Id" />
-                        <button class="button" type="submit">Katıl</button>
+                    <form method="post" action="/Home/UpdateEvent">
+                        <input type="hidden" name="eventid" value="@item.Id" />
+                        <button class="button" type="submit">Güncelle</button>
                     </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section scripts{
+    <script>
+        $(function () {
+                $(".form-check-input").change(function()
+                {
+                    $(this).closest('form').submit();
+                });
+        });
+    </script>
+}

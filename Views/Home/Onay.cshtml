@@ -69,6 +69,12 @@
                     <td>@item.Olusturan</td>
                     <td>@item.Aktif</td>
                     <td>@item.Adres</td>
+                    <td>
+                        <form method="post" asp-action="Onay">
+                            <input type="hidden" name="mainid" value="@item.Id"/>
+                            <input class="form-check-input" type="checkbox" name="onaylimi" asp-for="@item.Onay" />
+                        </form>
+                    </td>
                     
                 </tr>
             }
@@ -76,4 +82,15 @@
     </table>
     <button class="button" type="submit">Submit</button>
 </form>
+
+@section scripts{
+    <script>
+        $(function () {
+                $(".form-check-input").change(function()
+                {
+                    $(this).closest('form').submit();
+                });
+        });
+    </script>
+}
 

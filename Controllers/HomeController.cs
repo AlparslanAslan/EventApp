@@ -88,23 +88,32 @@ public class HomeController : Controller
     public IActionResult ShowEvents()
     {
         if(CurrentUser.userId ==-1)
-            return Content("Giriş Yapmadınız");
+            return Content("Giriş Yapmadınız.");
         var method = new DBMethods();
-        var events = method.ShowEvents(CurrentUser.userId);
-        return View(events);
+        var eventsToShow = new EventsForUpdate(){_events=method.ShowEvents(CurrentUser.userId)};
+        IEnumerable<string> citiesNumerable = method.GetCities() ;
+        
+        ViewData["Cities"] = new SelectList(citiesNumerable);
+
+        IEnumerable<string> categoriesNumerable = method.GetCategories();
+        
+        ViewData["Categories"] = new SelectList(categoriesNumerable);
+        
+        return View(eventsToShow);
     }
     public IActionResult Arama(Event _event)
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
         var method = new DBMethods();
-        var events = method.ShowEvents(CurrentUser.userId);
+        var events = method.FilterEvents(_event.Tarih,_event.Kategori,_event.Sehir);
         IEnumerable<string> citiesNumerable = method.GetCities() ;
         ViewData["Cities"] = new SelectList(citiesNumerable);
 
         IEnumerable<string> categoriesNumerable = method.GetCategories();
         ViewData["Categories"] = new SelectList(categoriesNumerable);
-        return View(events);
+        var eventsToShow = new EventsForUpdate(){_events=events};
+        return View("ShowEvents",eventsToShow);
     }
     [HttpPost]
     public IActionResult ShowEvents(int Itemid)
@@ -117,9 +126,13 @@ public class HomeController : Controller
         };
         var method = new DBMethods();
         method.AddTicket(bilet);
+        IEnumerable<string> citiesNumerable = method.GetCities() ;
+        ViewData["Cities"] = new SelectList(citiesNumerable);
 
-        var events = method.ShowEvents(CurrentUser.userId);
-        return View(events);
+        IEnumerable<string> categoriesNumerable = method.GetCategories();
+        ViewData["Categories"] = new SelectList(categoriesNumerable);
+        var eventsToShow = new EventsForUpdate(){_events=method.ShowEvents(CurrentUser.userId)};
+        return View(eventsToShow);
     }
     [HttpGet]
     public IActionResult CreateEvent()
@@ -149,7 +162,7 @@ public class HomeController : Controller
             return View("CreateEvent");
         }
         _event.Aktif=1;
-        _event.Onay=2;
+        _event.Onay=false;
         _event.OlusturanNumeric = CurrentUser.userId;
         var method = new DBConnections.DBMethods();
         method.AddEvent(_event);
@@ -196,18 +209,21 @@ public class HomeController : Controller
     [HttpGet]
     public IActionResult Onay()
     {
-        if(CurrentUser.userId ==-1)
-            return Content("Giriş Yapmadınız");
-        if(CurrentUser.userRole !="admin")
-            return Content("Sadece Admin Görüntüleyebilir");
+        // if(CurrentUser.userId ==-1)
+        //     return Content("Giriş Yapmadınız");
+        // if(CurrentUser.userRole !="admin")
+        //     return Content("Sadece Admin Görüntüleyebilir");
         var method= new DBMethods();
-        var events = method.ShowEvents(0);
+        var events = method.ShowEventsForOnay();
         return View(events);
     }
     [HttpPost]
-    public IActionResult Onay(int i)
+    public IActionResult Onay(string mainid,bool onaylimi)
     {
-        return View("InfoUpdate");
+        var method= new DBMethods();
+        method.UpdateEvent(new Event(){Id=Convert.ToInt32(mainid) , Onay=onaylimi});
+        var events = method.ShowEventsForOnay();
+        return View("Onay",events);
     }
     [HttpPost]
     public IActionResult AddCity(string sehir)
@@ -245,6 +261,24 @@ public class HomeController : Controller
     public IActionResult Privacy()
     {
         return View();
+    }
+    [HttpPost]
+    public IActionResult UpdateEvent(int eventid,Event _event)
+    {
+        if(eventid > 0)
+        {
+            ViewBag.eventid = eventid;
+            var method = new DBMethods();
+            Event eve = method.GetEventByEventId(eventid);
+            return View(eve);
+        }
+        else
+        {
+            
+            var method = new DBMethods();
+            method.UpdateEventDetail(_event);
+            return CreateEvent();
+        }
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EventApp.Models.Event>
+﻿@model EventApp.Models.EventsForUpdate
 
 <style>
     table {
@@ -53,23 +53,23 @@
 <table>  
 
 <tr>  
-<td>@Html.LabelFor(a => a.First().Tarih)</td>  
-<td>@Html.EditorFor(a => a.First().Tarih,  new { @type = "date", @value = DateTime.Now.ToString("dd/MM/yyyy HH:mm ") })</td>  
+<td>@Html.LabelFor(a => a._event.Tarih)</td>  
+<td>@Html.EditorFor(a => a._event.Tarih,  new { @type = "date", @value = DateTime.Now.ToString("dd/MM/yyyy HH:mm ") })</td>  
 @* <td>
 @Html.EditorFor(a => a.Tarih, new { htmlAttributes = new { @class = "datepicker" } })
 </td> *@
-<td>@Html.ValidationMessageFor(a => a.First().Tarih)</td>  
+<td>@Html.ValidationMessageFor(a => a._event.Tarih)</td>  
 </tr>  
 
 <tr>  
-<td>@Html.LabelFor(a => a.First().Kategori)</td>  
-<td>@Html.DropDownListFor(a => a.First().Kategori,(SelectList)@ViewData["Categories"])</td>  
-<td>@Html.ValidationMessageFor(a => a.First().Kategori)</td>  
+<td>@Html.LabelFor(a => a._event.Kategori)</td>  
+<td>@Html.DropDownListFor(a => a._event.Kategori,(SelectList)@ViewData["Categories"])</td>  
+<td>@Html.ValidationMessageFor(a => a._event.Kategori)</td>  
 </tr> 
 <tr>  
-<td>@Html.LabelFor(a => a.First().Sehir)</td>  
-<td>@Html.DropDownListFor(a => a.First().Sehir,(SelectList)@ViewData["Cities"])</td>  
-<td>@Html.ValidationMessageFor(a => a.First().Sehir)</td>  
+<td>@Html.LabelFor(a => a._event.Sehir)</td>  
+<td>@Html.DropDownListFor(a => a._event.Sehir,(SelectList)@ViewData["Cities"])</td>  
+<td>@Html.ValidationMessageFor(a => a._event.Sehir)</td>  
 </tr>  
 
 <tr>  
@@ -99,7 +99,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model._events)
         {
             <tr>
                 <td>@item.Baslik</td>
