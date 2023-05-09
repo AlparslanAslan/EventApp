@@ -55,7 +55,7 @@ namespace EventApp.DBConnections
         public int DeleteCategory(string category)
         {
             string sql = @"
-                delete from Sehir where Name = @CategoryName
+                delete from Kategori where Name = @CategoryName
             ";
              using (var connection = new SqlConnection(connectionString))
             {
@@ -66,7 +66,7 @@ namespace EventApp.DBConnections
         public int DeleteCity(string city)
         {
             string sql = @"
-                Delete from Kategori where Name=@SehirName 
+                Delete from Sehir where Name=@SehirName 
             ";
              using (var connection = new SqlConnection(connectionString))
             {

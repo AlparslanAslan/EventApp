@@ -277,7 +277,7 @@ public class HomeController : Controller
             ViewBag.Message = "Var olan bir şehri tekrar ekleyemezsiniz";
         else
             method.AddCity(sehir);
-        
+        CitiesAndCategories.Sehirler = method.GetCities();
         return View("SetInformation",CitiesAndCategories);
     }
       [HttpPost]
@@ -343,7 +343,7 @@ public class HomeController : Controller
             ViewBag.Message = "Var olan bir kategoriyi tekrar ekleyemezsiniz";
         else
             method.AddCategory(kategori);
-
+        CitiesAndCategories.Kategoriler = method.GetCategories();
         return View("SetInformation",CitiesAndCategories);
         
     }
