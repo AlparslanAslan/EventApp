@@ -1,1 +1,1 @@
-insert into EventUser values('admin','admin','admin@admin.com','p@ssword1','admin');
+insert into EventUser values('admin','admin','admin@admin.com','wZhj2PFQt33bayCjdyutGHYdpLePjVAvMqJquEZ1EP8=','admin');

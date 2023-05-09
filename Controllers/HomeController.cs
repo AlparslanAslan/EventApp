@@ -4,7 +4,7 @@ using EventApp.Models;
 using EventApp.DBConnections;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EventApp.Operations;
-using System;
+using System.IO;
 
 namespace EventApp.Controllers;
 
@@ -23,8 +23,12 @@ public class HomeController : Controller
     }
     public IActionResult Index()
     {
-        var con = _configuration.GetConnectionString("dbTest");
-        return View();
+        var method = new DBMethods(_configuration);
+        var sonuc = method.IsTablesExist();
+        if(sonuc == 0)
+            return View("AddTables");
+        else
+            return View();
     }
     [HttpPost]
     public IActionResult Signin(User user)
@@ -39,7 +43,7 @@ public class HomeController : Controller
         string hashPassword = PasswordEncrypter.EncryptPassword(user.Password);
         user.Password = hashPassword;
        
-        var dbMethod = new DBMethods();
+        var dbMethod = new DBMethods(this._configuration);
         var sonuc = dbMethod.AddUser(user);
         if(sonuc>0)
         {
@@ -65,8 +69,10 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult Login(User user)
     {
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         User _user = method.GetUserForLogin(user.Email,user.Password);
+        if(_user == null)
+            return Content("User bulunamadı");
         var passwordVerified = PasswordEncrypter.VerifyPassword(user.Password,_user.Password);
         if(_user == null || !passwordVerified)
         {
@@ -94,7 +100,7 @@ public class HomeController : Controller
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız.");
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         var eventsToShow = new EventsForUpdate(){_events=method.ShowEvents(CurrentUser.userId)};
         IEnumerable<string> citiesNumerable = method.GetCities() ;
         
@@ -110,7 +116,7 @@ public class HomeController : Controller
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         var events = method.FilterEvents(_event.Tarih,_event.Kategori,_event.Sehir,CurrentUser.userId);
         IEnumerable<string> citiesNumerable = method.GetCities() ;
         ViewData["Cities"] = new SelectList(citiesNumerable);
@@ -123,7 +129,7 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ShowEvents(int Itemid, int kontenjan)
     {
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         if(kontenjan == 0)
         {
             ViewBag.Message ="Kontenjan Yetersiz. Katılım Sağlayamazsınız.";
@@ -152,7 +158,7 @@ public class HomeController : Controller
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
 
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         var eventUpdate = new EventsForUpdate();
         eventUpdate._events = method.GetEventsById(CurrentUser.userId);
         IEnumerable<string> citiesNumerable = method.GetCities() ;
@@ -166,7 +172,7 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult CreateEvent(Event _event,int eventidKaldir)
     {
-        var method = new DBConnections.DBMethods();
+        var method = new DBConnections.DBMethods(this._configuration);
         if(eventidKaldir > 0 )
         {
             int sonuc = method.DateControl(eventidKaldir);
@@ -206,7 +212,7 @@ public class HomeController : Controller
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         IEnumerable<Ticket> tickets = method.GetTickets(CurrentUser.userId);
         return View(tickets);
     }
@@ -215,7 +221,7 @@ public class HomeController : Controller
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         method.DeleteTicket(ticketNo);
         IEnumerable<Ticket> tickets = method.GetTickets(CurrentUser.userId);
         return View(tickets);
@@ -224,7 +230,7 @@ public class HomeController : Controller
     {
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         User _user= method.GetUser(CurrentUser.userId);
         ViewData["Name"] =_user.Name;
         ViewData["Surname"] =_user.Surname;
@@ -236,7 +242,7 @@ public class HomeController : Controller
     public IActionResult MyProfile(User _user)
     {
         _user.Id=CurrentUser.userId;
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         _user.Password = PasswordEncrypter.EncryptPassword(_user.Password);
         method.UpdateUser(_user);
         return View(_user);
@@ -248,14 +254,14 @@ public class HomeController : Controller
         //     return Content("Giriş Yapmadınız");
         // if(CurrentUser.userRole !="admin")
         //     return Content("Sadece Admin Görüntüleyebilir");
-        var method= new DBMethods();
+        var method= new DBMethods(this._configuration);
         var events = method.ShowEventsForOnay();
         return View(events);
     }
     [HttpPost]
     public IActionResult Onay(string mainid,bool onaylimi)
     {
-        var method= new DBMethods();
+        var method= new DBMethods(this._configuration);
         method.UpdateEvent(new Event(){Id=Convert.ToInt32(mainid) , Onay=onaylimi});
         var events = method.ShowEventsForOnay();
         return View("Onay",events);
@@ -263,11 +269,55 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult AddCity(string sehir)
     {
-        var method = new DBMethods();
-        method.AddCity(sehir);
+        var method = new DBMethods(this._configuration);
         var CitiesAndCategories = new Info();
         CitiesAndCategories.Sehirler = method.GetCities();
         CitiesAndCategories.Kategoriler = method.GetCategories();
+        if(CitiesAndCategories.Sehirler.Contains(sehir))
+            ViewBag.Message = "Var olan bir şehri tekrar ekleyemezsiniz";
+        else
+            method.AddCity(sehir);
+        
+        return View("SetInformation",CitiesAndCategories);
+    }
+      [HttpPost]
+    public IActionResult CreateTables()
+    {
+        var method = new DBMethods(this._configuration);
+        string scriptPath = "DBConnections/Package/";
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"Event.table.sql"));
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"EventUser.table.sql"));
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"Kategori.table.sql"));
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"Sehir.table.sql"));
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"Ticket.table.sql"));
+        method.RunScript(System.IO.File.ReadAllText(scriptPath+"add_admin.post.sql"));
+
+        
+        return View("Index");
+    }
+    [HttpPost]
+    public IActionResult DeleteCity(string sehir)
+    {
+        var method = new DBMethods(this._configuration);
+        method.DeleteCity(sehir);
+
+        var CitiesAndCategories = new Info();
+        CitiesAndCategories.Sehirler = method.GetCities();
+        CitiesAndCategories.Kategoriler = method.GetCategories();
+        return View("SetInformation",CitiesAndCategories);
+    }
+    [HttpPost]
+    public IActionResult DeleteCategory(string category)
+    {
+        var method = new DBMethods(this._configuration);
+        method.DeleteCategory(category);
+
+        var CitiesAndCategories = new Info();
+        CitiesAndCategories.Sehirler = method.GetCities();
+        CitiesAndCategories.Kategoriler = method.GetCategories();
+
+      
+
         return View("SetInformation",CitiesAndCategories);
     }
      public IActionResult SetInformation()
@@ -277,7 +327,7 @@ public class HomeController : Controller
         if(CurrentUser.userRole !="admin")
             return Content("Sadece Admin Görüntüleyebilir");
         var CitiesAndCategories = new Info();
-        var method = new DBMethods();
+        var method = new DBMethods(this._configuration);
         CitiesAndCategories.Sehirler = method.GetCities();
         CitiesAndCategories.Kategoriler = method.GetCategories();
         return View(CitiesAndCategories);
@@ -285,11 +335,15 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult AddCategory(string kategori)
     {
-        var method = new DBMethods();
-        method.AddCategory(kategori);
+        var method = new DBMethods(this._configuration);
         var CitiesAndCategories = new Info();
         CitiesAndCategories.Sehirler = method.GetCities();
         CitiesAndCategories.Kategoriler = method.GetCategories();
+        if(CitiesAndCategories.Kategoriler.Contains(kategori))
+            ViewBag.Message = "Var olan bir kategoriyi tekrar ekleyemezsiniz";
+        else
+            method.AddCategory(kategori);
+
         return View("SetInformation",CitiesAndCategories);
         
     }
@@ -303,7 +357,7 @@ public class HomeController : Controller
         if(eventid > 0)
         {
             ViewBag.eventid = eventid;
-            var method = new DBMethods();
+            var method = new DBMethods(this._configuration);
             Event eve = method.GetEventByEventId(eventid);
             return View(eve);
         }
@@ -311,7 +365,7 @@ public class HomeController : Controller
         {
             
             
-            var method = new DBMethods();
+            var method = new DBMethods(this._configuration);
             
             int sonuc = method.DateControl(_event.Id);
             if(sonuc == 0)

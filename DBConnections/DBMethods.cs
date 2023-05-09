@@ -8,13 +8,38 @@ namespace EventApp.DBConnections
 {
     public class DBMethods
     {
-        private static string connectionString= @"
- Server=172.17.0.2;Database=test;User Id=sa;Password=;
-";
+        private string connectionString;
+//          @"
+//  Server=172.17.0.2;Database=test;User Id=sa;Password=;
+
+// ";
+        public DBMethods(IConfiguration configuration)
+        {
+            this.connectionString = configuration.GetConnectionString("dbTest");
+        }
         // public IConfiguration Configuration{get;set;}
 
         // private static string connectionString;// = Configuration.GetConnectionString("dbTest");
-        
+        public int IsTablesExist()
+        {
+             string sql = @"
+             IF (SELECT count(*) FROM sys.tables WHERE name in('Event','EventUser','Kategori','Sehir','Ticket')) = 5 
+                SELECT 1
+             ELSE
+                SELECT 0
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.QueryFirstOrDefault<int>(sql);
+            }
+        }  
+        public int RunScript(string sql)
+        {
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql);
+            }
+        } 
         public int AddUser(User user)
         {
             string sql = @"
@@ -24,6 +49,28 @@ namespace EventApp.DBConnections
              using (var connection = new SqlConnection(connectionString))
             {
                 return connection.ExecuteScalar<int>(sql, user);
+            }
+
+        }
+        public int DeleteCategory(string category)
+        {
+            string sql = @"
+                delete from Sehir where Name = @CategoryName
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql, new {CategoryName=category});
+            }
+
+        }
+        public int DeleteCity(string city)
+        {
+            string sql = @"
+                Delete from Kategori where Name=@SehirName 
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql, new {SehirName=city});
             }
 
         }
@@ -119,7 +166,7 @@ namespace EventApp.DBConnections
                 return connection.Execute(sql,new {EventId=EventId});
             }
         }
-         public int UpdateEvent(Event _event)
+        public int UpdateEvent(Event _event)
         {
             string sql = @"
                 update Event set Onay=@Onay where Id=@Id;
@@ -129,7 +176,7 @@ namespace EventApp.DBConnections
                 return connection.Execute(sql,_event);
             }
         }
-         public int UpdateEventDetail(Event _event)
+        public int UpdateEventDetail(Event _event)
         {
             string sql = @"
                 update Event set kontenjan=@Kontenjan , adres=@Adres where Id=@Id;
@@ -139,7 +186,7 @@ namespace EventApp.DBConnections
                 return connection.Execute(sql,_event);
             }
         }
-         public User GetUser(int userId)
+        public User GetUser(int userId)
         {
             string sql = @"
                 select Name,Surname,Email,Password from EventUser where Id=@userId
@@ -149,7 +196,7 @@ namespace EventApp.DBConnections
                 return connection.QueryFirst<User>(sql,new {userId=userId});
             }
         }
-         public Event GetEventByEventId(int eventid)
+        public Event GetEventByEventId(int eventid)
         {
             string sql = @"
                 select * from Event where Id=@eventid

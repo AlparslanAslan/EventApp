@@ -2,7 +2,7 @@
 -- Drop the table if it already exists
 IF OBJECT_ID('[dbo].[Ticket]', 'U') IS NOT NULL
 DROP TABLE [dbo].[Ticket]
-GO
+--GO
 -- Create the table in the specified schema
 CREATE TABLE [dbo].[Ticket]
 (
@@ -11,4 +11,4 @@ CREATE TABLE [dbo].[Ticket]
     [EventId] INT
     
 );
-GO
+--GO

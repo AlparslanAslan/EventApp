@@ -2,7 +2,7 @@
 -- Drop the table if it already exists
 IF OBJECT_ID('[dbo].[Event]', 'U') IS NOT NULL
 DROP TABLE [dbo].[Event]
-GO
+-- GO
 -- Create the table in the specified schema
 CREATE TABLE [dbo].[Event]
 (
@@ -18,5 +18,5 @@ CREATE TABLE [dbo].[Event]
     aktif int,
     adres varchar(200)
 );
-GO
+--GO
 

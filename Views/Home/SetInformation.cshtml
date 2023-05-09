@@ -37,7 +37,12 @@
         border-color: #357ebd;
     }
 </style>
-
+@if (@ViewBag.Message != null)  
+{  
+<div style="border: 1px solid red">  
+@ViewBag.Message  
+</div>  
+}  
 <form method="post" action="/Home/AddCity">
     <!-- Form 1 fields -->
     <input type="text" name="sehir" />
@@ -48,15 +53,24 @@
         <thead>
             <tr>
                 <th>Şehir</th>
+                <th>Kaldır</th>
                 
             </tr>
+          
         </thead>
         <tbody>
             @foreach (var item in Model.Sehirler)
             {
                 <tr>
                     <td>@item</td>
+                     <td>
+                    <form method="post" action="/Home/DeleteCity">
+                        <input type="hidden" name="sehir" value="@item" />
+                        <button class="button" type="submit">Kaldır</button>
+                    </form>
+                    </td>
                 </tr>
+                
             }
         </tbody>
 </table>
@@ -69,6 +83,7 @@
         <thead>
             <tr>
                 <th>Kategoriler</th>
+                <th>Kaldır</th>
                 
             </tr>
         </thead>
@@ -77,6 +92,12 @@
             {
                 <tr>
                     <td>@item</td>
+                    <td>
+                    <form method="post" action="/Home/DeleteCategory">
+                        <input type="hidden" name="kategori" value="@item" />
+                        <button class="button" type="submit">Kaldır</button>
+                    </form>
+                    </td>
                 </tr>
             }
         </tbody>

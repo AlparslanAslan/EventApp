@@ -2,7 +2,7 @@
 -- Drop the table if it already exists
 IF OBJECT_ID('[dbo].[Kategori]', 'U') IS NOT NULL
 DROP TABLE [dbo].[Kategori]
-GO
+--GO
 -- Create the table in the specified schema
 CREATE TABLE [dbo].[Kategori]
 (
@@ -10,4 +10,4 @@ CREATE TABLE [dbo].[Kategori]
     Name varchar(100)
     -- Specify more columns here
 );
-GO
+--GO
