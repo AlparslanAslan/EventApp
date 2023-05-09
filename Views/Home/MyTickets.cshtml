@@ -49,13 +49,11 @@
             <th>Başlık</th>
             <th>Açıklama</th>
             <th>Tarih</th>
-            <th>Kontenjan</th>
             <th>Kategori</th>
             <th>Şehir</th>
             <th>Oluşturan</th>
-            <th>Aktif</th>
             <th>Adres</th>
-            <th>Onay</th>
+            <th>İptal</th>
         </tr>
     </thead>
     <tbody>
@@ -66,15 +64,13 @@
                 <td>@item.Baslik</td>
                 <td>@item.Aciklama</td>
                 <td>@item.Tarih</td>
-                <td>@item.Kontenjan</td>
                 <td>@item.Kategori</td>
                 <td>@item.Sehir</td>
                 <td>@item.Olusturan</td>
-                <td>@item.Aktif</td>
                 <td>@item.Adres</td>
                  <td>
-                    <form method="post" action="/Home/ShowEvents">
-                        <input type="hidden" name="itemId" value="@item.EventId" />
+                    <form method="post" action="/Home/MyTickets">
+                        <input type="hidden" name="ticketNo" value="@item.TicketNo" />
                         <button class="button" type="submit">İptal</button>
                     </form>
                 </td>

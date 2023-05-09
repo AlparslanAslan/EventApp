@@ -128,9 +128,9 @@
             <th>Kategori</th>
             <th>Şehir</th>
             <th>Oluşturan</th>
-            <th>Aktif</th>
             <th>Adres</th>
-            <th>Onay</th>
+            <th>Güncelle</th>
+            <th>Kaldır</th>
         </tr>
     </thead>
     <tbody>
@@ -144,12 +144,17 @@
                 <td>@item.Kategori</td>
                 <td>@item.Sehir</td>
                 <td>@item.Olusturan</td>
-                <td>@item.Aktif</td>
                 <td>@item.Adres</td>
                  <td>
                     <form method="post" action="/Home/UpdateEvent">
                         <input type="hidden" name="eventid" value="@item.Id" />
                         <button class="button" type="submit">Güncelle</button>
+                    </form>
+                </td>
+                 <td>
+                    <form method="post" action="/Home/CreateEvent">
+                        <input type="hidden" name="eventidKaldir" value="@item.Id" />
+                        <button class="button" type="submit">Kaldır</button>
                     </form>
                 </td>
             </tr>

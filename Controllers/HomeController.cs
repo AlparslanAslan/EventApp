@@ -15,13 +15,15 @@ public static class CurrentUser
 }
 public class HomeController : Controller
 {
+    private readonly IConfiguration _configuration;
     private readonly ILogger<HomeController> _logger;
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(IConfiguration config)
     {
-        _logger = logger;
+        this._configuration = config;
     }
     public IActionResult Index()
     {
+        var con = _configuration.GetConnectionString("dbTest");
         return View();
     }
     [HttpPost]
@@ -34,6 +36,8 @@ public class HomeController : Controller
             ViewBag.MessageSignUp=isValid;
             return View("Index");
         }
+        string hashPassword = PasswordEncrypter.EncryptPassword(user.Password);
+        user.Password = hashPassword;
        
         var dbMethod = new DBMethods();
         var sonuc = dbMethod.AddUser(user);
@@ -63,7 +67,8 @@ public class HomeController : Controller
     {
         var method = new DBMethods();
         User _user = method.GetUserForLogin(user.Email,user.Password);
-        if(_user == null)
+        var passwordVerified = PasswordEncrypter.VerifyPassword(user.Password,_user.Password);
+        if(_user == null || !passwordVerified)
         {
             ViewBag.MessageLogin = "Kullanıcı Maili ya da Şifre Hatalı!";
             return View("Index");
@@ -106,7 +111,7 @@ public class HomeController : Controller
         if(CurrentUser.userId ==-1)
             return Content("Giriş Yapmadınız");
         var method = new DBMethods();
-        var events = method.FilterEvents(_event.Tarih,_event.Kategori,_event.Sehir);
+        var events = method.FilterEvents(_event.Tarih,_event.Kategori,_event.Sehir,CurrentUser.userId);
         IEnumerable<string> citiesNumerable = method.GetCities() ;
         ViewData["Cities"] = new SelectList(citiesNumerable);
 
@@ -116,16 +121,23 @@ public class HomeController : Controller
         return View("ShowEvents",eventsToShow);
     }
     [HttpPost]
-    public IActionResult ShowEvents(int Itemid)
+    public IActionResult ShowEvents(int Itemid, int kontenjan)
     {
-        var bilet = new Ticket()
-        {
-            UserNumeric=CurrentUser.userId,
-            EventNumeric = Itemid,
-            TicketNo = Operation.GetTicketNumber()
-        };
         var method = new DBMethods();
-        method.AddTicket(bilet);
+        if(kontenjan == 0)
+        {
+            ViewBag.Message ="Kontenjan Yetersiz. Katılım Sağlayamazsınız.";
+        }
+        else
+        {
+            var bilet = new Ticket()
+            {
+                UserNumeric=CurrentUser.userId,
+                EventNumeric = Itemid,
+                TicketNo = Operation.GetTicketNumber()
+            };
+            method.AddTicket(bilet);
+        }
         IEnumerable<string> citiesNumerable = method.GetCities() ;
         ViewData["Cities"] = new SelectList(citiesNumerable);
 
@@ -152,20 +164,32 @@ public class HomeController : Controller
         return View(eventUpdate);
     }
     [HttpPost]
-    public IActionResult CreateEvent(Event _event)
+    public IActionResult CreateEvent(Event _event,int eventidKaldir)
     {
-        var val = new ValidationControl();
-        var sonuc = val.EventControl(_event);
-        if(sonuc != "Valid")
-        {
-            ViewBag.Message = sonuc;
-            return View("CreateEvent");
-        }
-        _event.Aktif=1;
-        _event.Onay=false;
-        _event.OlusturanNumeric = CurrentUser.userId;
         var method = new DBConnections.DBMethods();
-        method.AddEvent(_event);
+        if(eventidKaldir > 0 )
+        {
+            int sonuc = method.DateControl(eventidKaldir);
+            if(sonuc == 0)
+                ViewBag.Message  = "5 günden az zaman kala değişiklik yapamazsınız.";
+            else
+                method.DeleteEvent(eventidKaldir);
+        }
+        else
+        {
+            var val = new ValidationControl();
+            var sonuc = val.EventControl(_event);
+            if(sonuc != "Valid")
+            {
+                ViewBag.Message = sonuc;
+                return View("CreateEvent");
+            }
+            _event.Aktif=1;
+            _event.Onay=false;
+            _event.OlusturanNumeric = CurrentUser.userId;
+            method.AddEvent(_event);
+        }
+        
 
         var eventUpdate = new EventsForUpdate();
         eventUpdate._events = method.GetEventsById(CurrentUser.userId);
@@ -186,6 +210,16 @@ public class HomeController : Controller
         IEnumerable<Ticket> tickets = method.GetTickets(CurrentUser.userId);
         return View(tickets);
     }
+    [HttpPost]
+    public IActionResult MyTickets(string ticketNo)
+    {
+        if(CurrentUser.userId ==-1)
+            return Content("Giriş Yapmadınız");
+        var method = new DBMethods();
+        method.DeleteTicket(ticketNo);
+        IEnumerable<Ticket> tickets = method.GetTickets(CurrentUser.userId);
+        return View(tickets);
+    }
     public IActionResult MyProfile()
     {
         if(CurrentUser.userId ==-1)
@@ -195,7 +229,7 @@ public class HomeController : Controller
         ViewData["Name"] =_user.Name;
         ViewData["Surname"] =_user.Surname;
         ViewData["Email"] =_user.Email;
-        ViewData["Password"] =_user.Password;
+        ViewData["Password"] ="";
         return View(_user);
     }
     [HttpPost]
@@ -203,6 +237,7 @@ public class HomeController : Controller
     {
         _user.Id=CurrentUser.userId;
         var method = new DBMethods();
+        _user.Password = PasswordEncrypter.EncryptPassword(_user.Password);
         method.UpdateUser(_user);
         return View(_user);
     }
@@ -275,9 +310,24 @@ public class HomeController : Controller
         else
         {
             
+            
             var method = new DBMethods();
-            method.UpdateEventDetail(_event);
-            return CreateEvent();
+            
+            int sonuc = method.DateControl(_event.Id);
+            if(sonuc == 0)
+                ViewBag.Message  = "5 günden az zaman kala değişiklik yapamazsınız.";
+            else
+                method.UpdateEventDetail(_event);
+           
+            var eventUpdate = new EventsForUpdate();
+            eventUpdate._events = method.GetEventsById(CurrentUser.userId);
+            IEnumerable<string> citiesNumerable = method.GetCities() ;
+            ViewData["Cities"] = new SelectList(citiesNumerable);
+    
+            IEnumerable<string> categoriesNumerable = method.GetCategories();
+            ViewData["Categories"] = new SelectList(categoriesNumerable);
+    
+            return View("CreateEvent",eventUpdate);
         }
     }
 

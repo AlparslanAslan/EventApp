@@ -2,6 +2,7 @@ using Dapper;
 using System.Data;
 using System.Data.SqlClient;
 using EventApp.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace EventApp.DBConnections
 {
@@ -10,7 +11,10 @@ namespace EventApp.DBConnections
         private static string connectionString= @"
  Server=172.17.0.2;Database=test;User Id=sa;Password=balamir1234;
 ";
+        // public IConfiguration Configuration{get;set;}
 
+        // private static string connectionString;// = Configuration.GetConnectionString("dbTest");
+        
         public int AddUser(User user)
         {
             string sql = @"
@@ -82,6 +86,39 @@ namespace EventApp.DBConnections
                 return connection.Execute(sql,_user);
             }
         }
+        public int DeleteTicket(string TicketNo)
+        {
+            string sql = @"
+                delete from Ticket where BiletNo=@TicketNo
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql,new {TicketNo=TicketNo});
+            }
+        }
+        public int DateControl(int EventId)
+        {
+            string sql = @"
+                            SELECT
+    case when ((SELECT DATEADD(d, 5, GETDATE()))<
+    (SELECT tarih FROM event WHERE id = @EventId) ) then  1 else 0 end ;
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.QueryFirst<int>(sql,new {EventId=EventId});
+            }
+        }
+        public int DeleteEvent(int EventId)
+        {
+            string sql = @"
+                delete from Event where Id=@EventId;
+                delete from Ticket where EventId=@EventId
+            ";
+             using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.Execute(sql,new {EventId=EventId});
+            }
+        }
          public int UpdateEvent(Event _event)
         {
             string sql = @"
@@ -125,7 +162,7 @@ namespace EventApp.DBConnections
         public User GetUserForLogin(string email,string password)
         {
             string sql = @"
-                select Id,Name,Surname,Email,Password,Role from EventUser where Email=@Email and Password=@Password
+                select Id,Name,Surname,Email,Password,Role from EventUser where Email=@Email --and Password=@Password
             ";
              using (var connection = new SqlConnection(connectionString))
             {
@@ -140,7 +177,7 @@ namespace EventApp.DBConnections
                 left join Sehir s on s.Id=e.sehirid
                 left join Kategori k on k.Id=e.kategoriid
                 left join EventUser eu on eu.Id=e.olusturanid 
-                 left join (select eventid,count(*) toplam from Ticket  group by eventid) t on t.eventid=e.id
+                left join (select eventid,count(*) toplam from Ticket  group by eventid) t on t.eventid=e.id
                 where e.Id not in (select EventId from Ticket where UserId = @UserId)  and e.Onay=1
             ";
              using (var connection = new SqlConnection(connectionString))
@@ -165,7 +202,7 @@ namespace EventApp.DBConnections
             }
 
         } 
-        public  IEnumerable<Event> FilterEvents(DateTime? Tarih , string Kategori, string Sehir)
+        public  IEnumerable<Event> FilterEvents(DateTime? Tarih , string Kategori, string Sehir,int UserId)
         {
             string sql = @"
                 if(@Sehir='')
@@ -178,11 +215,11 @@ namespace EventApp.DBConnections
                 left join Kategori k on k.Id=e.kategoriid
                 left join EventUser eu on eu.Id=e.olusturanid 
                 left join (select eventid,count(*) toplam from Ticket  group by eventid) t on t.eventid=e.id
-                where k.Name = isnull(@Kategori,k.Name) and s.Name =isnull(@Sehir,s.Name) and e.tarih=isnull(@Tarih,e.tarih) and e.Onay=1
+                where k.Name = isnull(@Kategori,k.Name) and s.Name =isnull(@Sehir,s.Name) and e.tarih=isnull(@Tarih,e.tarih) and e.Onay=1 and e.Id not in (select EventId from Ticket where UserId = @UserId) 
             ";
              using (var connection = new SqlConnection(connectionString))
             {
-                return connection.Query<Event>(sql,new {Kategori=Kategori , Sehir=Sehir,Tarih=Tarih});
+                return connection.Query<Event>(sql,new {Kategori=Kategori , Sehir=Sehir,Tarih=Tarih,UserId=UserId});
             }
 
         }      
@@ -230,7 +267,7 @@ namespace EventApp.DBConnections
         {
             string sql = @"
                select t.BiletNo TicketNo,e.Id EventId , e.baslik Baslik , e.aciklama Aciklama , e.tarih Tarih
-                ,e.kontenjan Kontenjan,k.Name Kategori,s.Name Sehir,eu.Name Olusturan,e.adres Adres
+                ,e.kontenjan Kontenjan,k.Name Kategori,s.Name Sehir,Concat(eu.Name,' ',eu.Surname)  Olusturan,e.adres Adres
                 from Event e
                 inner join Ticket t on t.EventId=e.Id
                 inner join Sehir s on s.Id=e.sehirid
